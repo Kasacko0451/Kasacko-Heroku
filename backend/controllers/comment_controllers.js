@@ -21,14 +21,15 @@ exports.get_users_comments = async function(req, res, next) {
 
 exports.get_comments = async function(req, res, next) {
     const post_id = req.body.post_id
+    const user_id = req.user.id
     const res_comments = await pool.query(`
-                                        SELECT m.*, f.username, l.liked FROM comments AS m 
-                                            INNER JOIN users AS f 
-                                            ON f.id = m.user_id 
-                                            LEFT JOIN votedcomments AS l 
-                                            ON l.comment_id = m.id 
+                                        SELECT c.*, u.username, v.liked FROM comments AS c 
+                                        LEFT JOIN users AS u 
+                                            ON u.id = c.user_id 
+                                        LEFT JOIN votedcomments AS v 
+                                            ON v.comment_id = c.id AND v.user_id=$2
                                         WHERE post_id = $1`, 
-                                        [post_id])
+                                        [post_id, user_id])
     if (res_comments.rows.length) {
         res_comments.rows.forEach(com => {
             if (com.deleted === true) {
@@ -42,7 +43,8 @@ exports.get_comments = async function(req, res, next) {
 }
 
 exports.get_replies = async function(req, res, next) {
-    const comment_id = req.body.comment_id                                                                                                        
+    const comment_id = req.body.comment_id
+    const user_id = req.user.id                                                                                                        
     const res_beforecommments = await pool.query(`
                                                 WITH RECURSIVE result AS 
                                                 (SELECT * FROM comments WHERE id = $1 
@@ -51,22 +53,22 @@ exports.get_replies = async function(req, res, next) {
                                                     INNER JOIN result AS r 
                                                     ON c.id = r.reply_id
                                                 ) 
-                                                SELECT m.*, f.username, l.liked FROM result AS m 
-                                                    INNER JOIN users AS f 
-                                                    ON f.id = m.user_id 
-                                                    LEFT JOIN votedcomments AS l 
-                                                    ON l.comment_id = m.id 
+                                                SELECT m.*, u.username, v.liked FROM result AS m 
+                                                    LEFT JOIN users AS u 
+                                                        ON u.id = m.user_id 
+                                                    LEFT JOIN votedcomments AS v 
+                                                        ON v.comment_id = m.id AND v.user_id=$2
                                                 ORDER BY m.id`, 
-                                                [comment_id]) 
+                                                [comment_id, user_id]) 
     const res_replies = await pool.query(`
                                         SELECT m.*, f.username, l.liked FROM comments AS m 
-                                            INNER JOIN users AS f 
-                                            ON f.id = m.user_id 
+                                            LEFT JOIN users AS f 
+                                                ON f.id = m.user_id 
                                             LEFT JOIN votedcomments AS l 
-                                            ON l.comment_id = m.id 
+                                                ON l.comment_id = m.id AND l.user_id=$2
                                         WHERE reply_id = $1 
                                         ORDER BY m.comment_votes DESC`, 
-                                        [comment_id])
+                                        [comment_id, user_id])
     if (res_replies.rows.length) {
         res_replies.rows.forEach(com => {
             if (com.deleted === true) {
@@ -115,6 +117,17 @@ exports.delete_comment = function(req, res, nexr) {
     pool.query("UPDATE comments SET deleted = $1 WHERE id = $2", [true, comment_id])
     return res.status(200).json()
 }
+
+exports.get_liked_comments = async function (req, res, next) {
+    const user = req.body.username
+    const res_liked = await pool.query(`SELECT c.* FROM votedcomments AS v
+                                        LEFT JOIN comments AS c
+                                            ON v.comment_id = c.id
+                                        WHERE v.user_id = (SELECT id FROM users WHERE username=$1)`
+                                        , [user])
+    return res.status(200).json(res_liked.rows)
+}
+
 
 exports.vote_comment = async function(req, res, next) {
     let islike;

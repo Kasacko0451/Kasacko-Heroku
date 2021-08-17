@@ -11,12 +11,11 @@ exports.display_posts = async function(req, res, next) {
                                             IN (SELECT follows_user_id FROM followers 
                                          WHERE follower_user_id = $1)) AND p.deleted = $2`, 
                                         [user_id, false])
-                                        console.log(res_posts.rows)
     return res.status(200).json(res_posts.rows)
 }
 
 exports.get_users_posts = async function(req, res, next) {
-    const user = req.body.user
+    const user = req.body.username
     const res_posts = await pool.query("SELECT * FROM posts WHERE user_id IN (SELECT id FROM users WHERE username = $1) AND deleted = $2", [user, false])
     //if private dont send
     return res.status(200).json(res_posts.rows)
@@ -60,6 +59,16 @@ exports.delete_post = function(req, res, next) {
     const { post_id } = req.body
     pool.query("UPDATE posts SET deleted = $1 WHERE id = $2", [true, post_id])
     return res.status(200).json()
+}
+
+exports.get_liked_posts = async function (req, res, next) {
+    const user = req.body.username
+    const res_liked = await pool.query(`SELECT p.* FROM votedposts AS v
+                                        LEFT JOIN posts AS p
+                                            ON v.post_id = p.id
+                                        WHERE v.user_id = (SELECT id FROM users WHERE username=$1)`
+                                        , [user])
+    return res.status(200).json(res_liked.rows)
 }
 
 exports.vote_post = async function(req, res, next) {

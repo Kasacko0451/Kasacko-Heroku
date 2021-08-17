@@ -36,11 +36,10 @@ exports.delete_user = function (req, res, next) {
 }
 
 exports.display_userprofile = async function (req, res, next) {
-
     if (req.body.user === req.user.username) {
         const res_profile = await pool.query(`SELECT * FROM userprofiles WHERE user_id = $1`, [req.user.id])
         return res.status(200).json(res_profile.rows[0])
-    } else { //FIX QUERY
+    } else { 
         const res_profile = await pool.query(
                                         `SELECT u.id, u.username, up.*, f.follower_user_id, fr.follows_user_id FROM users AS u
                                          INNER JOIN userprofiles AS up
