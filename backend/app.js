@@ -4,10 +4,10 @@ const app = express();
 const http = require("http").createServer(app);
 const passport = require("./passport/index.js");
 const session = require('express-session')
-const pgSession = require('connect-pg-simple')(session)
 const auth_routes = require("./routes/auth_routes.js");
 const all_routes = require("./routes/all_routes.js");
 const pool = require("./db.js");
+const pgSession = require('connect-pg-simple')(session)
 const PORT = process.env.PORT || 8080;
 
 pool.connect();
