@@ -107,8 +107,9 @@ exports.search_users = async function (req, res, next) {
     if (searchterm) {
         const result = await pool.query(`SELECT * FROM userprofiles WHERE username ILIKE $1`, 
                                          ['%' + searchterm + '%'])
-        return res.status(200).json(result.rows)
+        if (result.rows.length) return res.status(200).json(result.rows)
+        return res.status(200).json([{nousers: "No users found..."}])
     } else {
-        return res.status(200).json([])
+        return res.status(200).json([{nousers: "No users found..."}])
     }
 }
