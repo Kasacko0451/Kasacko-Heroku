@@ -9,8 +9,11 @@ const all_routes = require("./routes/all_routes.js");
 const pool = require("./db.js");
 const PORT = process.env.PORT || 8080;
 
+console.log("beofre session")
+pool.connect()
 const pgSession = require('connect-pg-simple')(session)
-
+console.log("after session")
+pool.connect()
 const io = require('socket.io')(http);
 
 const authCheck = (req, res, next) => {
