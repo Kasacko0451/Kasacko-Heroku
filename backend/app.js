@@ -10,7 +10,7 @@ const pool = require("./db.js");
 const PORT = process.env.PORT || 8080;
 
 const pgSession = require('connect-pg-simple')(session)
-
+console.log(pool)
 const io = require('socket.io')(http);
 
 const authCheck = (req, res, next) => {
