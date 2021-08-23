@@ -9,8 +9,6 @@ const all_routes = require("./routes/all_routes.js");
 const pool = require("./db.js");
 const PORT = process.env.PORT || 8080;
 
-pool.connect();
-
 const pgSession = require('connect-pg-simple')(session)
 
 const io = require('socket.io')(http);
@@ -29,7 +27,7 @@ const sessionMiddleware = session({
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
     store: new pgSession({
-        pool : process.env.DATABASE_URL || pool,               
+        conString : process.env.DATABASE_URL,               
         tableName : 'session' 
     })
 });
