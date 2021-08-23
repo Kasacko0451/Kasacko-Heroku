@@ -28,7 +28,10 @@ const sessionMiddleware = session({
     cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
     store: new pgSession({
         conString : process.env.DATABASE_URL,               
-        tableName : 'session' 
+        tableName : 'session',
+        ssl: {
+            rejectUnauthorized: false
+        }
     })
 });
 
