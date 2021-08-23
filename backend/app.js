@@ -55,13 +55,14 @@ const wrap = (middleware) => (socket, next) => middleware(socket.request, {}, ne
 io.use(wrap(sessionMiddleware));
 
 io.on('connection', async function(socket) {
-    
+    console.log("connected")
     const result = await pool.query("SELECT sess FROM session WHERE sid=$1", [socket.request.sessionID])       
     let curr_user = result.rows[0].sess.passport.user
 
     socket.join(curr_user);
     
     socket.on("send_chat_message", message => {
+        console.log("message")
         pool.query("INSERT INTO chats (msg, username, sendername) VALUES ($1, $2, $3)", [message.msg, message.username, message.sendername])
         io.to(message.username).emit("message", message);
     })
