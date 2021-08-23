@@ -1,5 +1,16 @@
 CREATE DATABASE kasacko
 
+CREATE TABLE "session" (
+  "sid" varchar NOT NULL COLLATE "default",
+	"sess" json NOT NULL,
+	"expire" timestamp(6) NOT NULL
+)
+WITH (OIDS=FALSE);
+
+ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+CREATE INDEX "IDX_session_expire" ON "session" ("expire");
+
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(20),
@@ -72,12 +83,10 @@ CREATE TABLE userprofiles (
 
 CREATE TABLE chats (
     id SERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(id),
-    chatthread_id BIGINT NOT NULL,
+    sendername VARCHAR(200),
+    username VARCHAR(200),
     msg VARCHAR(200),
-    is_read Boolean DEFAULT false,
-    chat_date DATE DEFAULT NOW(),
-    deleted Boolean DEFAULT false
+    chat_date DATE DEFAULT NOW()
 );
 
 DROP TABLE votedposts;

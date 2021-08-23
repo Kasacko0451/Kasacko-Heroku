@@ -1,17 +1,16 @@
-const cookieSession = require("cookie-session")
-const path = require("path");
+const path = require("path")
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
 const passport = require("./passport/index.js");
+const session = require('express-session')
+const pgSession = require('connect-pg-simple')(session)
 const auth_routes = require("./routes/auth_routes.js");
 const all_routes = require("./routes/all_routes.js");
+const pool = require("./db.js");
 const PORT = process.env.PORT || 8080;
-const io = require('socket.io')(http , {
-    cors: {
-        origin: ["http://localhost:3000"]
-    }
-});
+
+const io = require('socket.io')(http);
 
 const authCheck = (req, res, next) => {
     if (req.user) next();
@@ -19,11 +18,20 @@ const authCheck = (req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieSession({
-    name: 'session',
-    keys: ['ke4512y162', 'key332342'],
-    secret: "se34crf3dsfs"
-}))
+
+const sessionMiddleware = session({
+    name: 'profile_session',
+    secret: "231134234",
+    resave: true,
+    saveUninitialized: false,
+    cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
+    store: new pgSession({
+        pool : process.env.DATABASE_URL || pool,               
+        tableName : 'session' 
+    })
+});
+
+app.use(sessionMiddleware);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -31,48 +39,43 @@ app.use(passport.session());
 app.use("/auth", auth_routes);
 app.use("/api", authCheck, all_routes);
 
+http.listen(PORT, () => console.log(`Server started on ${PORT}`));
+
 app.use(express.static(path.join(__dirname, "build")));
 
 app.get( `*`, (req, res, next) => {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
+const wrap = (middleware) => (socket, next) => middleware(socket.request, {}, next);
+io.use(wrap(sessionMiddleware));
+
 io.on('connection', async function(socket) {
-    const logged_user = JSON.parse(Object.entries(sessionStore.sessions)[0][1]).passport.user
-    const res_id = await pool.query("SELECT id FROM users WHERE username=$1", [logged_user])
     
-    
-    //send message
-    // store message into postgres
+    const result = await pool.query("SELECT sess FROM session WHERE sid=$1", [socket.request.sessionID])       
+    let curr_user = result.rows[0].sess.passport.user
 
-    socket.on('disconnect', function () {});
+    socket.join(curr_user);
+    
+    socket.on("send_chat_message", message => {
+        pool.query("INSERT INTO chats (msg, username, sendername) VALUES ($1, $2, $3)", [message.msg, message.username, message.sendername])
+        io.to(message.username).emit("message", message);
+    })
 });
-
-http.listen(PORT, () => console.log(`Server started on ${PORT}`));
 
 module.exports = app;
 
 /*
 BACKEND:
-socket chat
-search bar
-post images, links, add avatar to userprofile
-add email to user creation
+post images, add avatar to userprofile
 form validation for register, login, posts, comments, chat
-forgot password (email)
-authorization (admin, user etc...)
-fix time for utc
 
 FRONTEND:
 add styling, css
-render replies , edits on frontend
-disable buttons
+render replies, edits on frontend
 infinite scroll
 
 USERPROFILE
-TABS -  OPEN CHAT WITH USER
-        USER SETTINGS - 
-                        CHANGE EMAIL
+TABS - USER SETTINGS -  CHANGE EMAIL
                         CHANGE PASSWORD                   
-                        DELETE ACCOUNT
 */

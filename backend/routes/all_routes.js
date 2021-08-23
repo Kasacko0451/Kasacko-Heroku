@@ -3,6 +3,7 @@ const router = express.Router();
 const comment_controllers = require("../controllers/comment_controllers");
 const post_controllers = require("../controllers/post_controllers");
 const user_controllers = require("../controllers/user_controllers");
+const chat_controllers = require("../controllers/chat_controllers");
 
 // POST ROUTES
 router.post("/get_users_posts", post_controllers.get_users_posts);
@@ -65,6 +66,9 @@ router.post("/follow_user", user_controllers.follow_user);
 
 router.post("/unfollow_user", user_controllers.unfollow_user);
 
+router.post("/search_users", user_controllers.search_users);
+
 // CHAT ROUTES
+router.post("/get_chat", chat_controllers.get_chat);
 
 module.exports = router;

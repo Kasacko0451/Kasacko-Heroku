@@ -8,6 +8,6 @@ router.post("/login", auth_controllers.login);
 
 router.get("/logout", auth_controllers.logout);
 
-router.post("/islog", auth_controllers.islog);
+router.get("/islog", auth_controllers.islog);
 
 module.exports = router;

@@ -101,3 +101,14 @@ exports.unfollow_user = async function (req, res, next) {
     pool.query("DELETE FROM followers WHERE follower_user_id = $1 AND follows_user_id = $2", [req.user.id, res_id.rows[0].id])
     return res.status(200).json()
 }
+
+exports.search_users = async function (req, res, next) {
+    const { searchterm } = req.body
+    if (searchterm) {
+        const result = await pool.query(`SELECT * FROM userprofiles WHERE username ILIKE $1`, 
+                                         ['%' + searchterm + '%'])
+        return res.status(200).json(result.rows)
+    } else {
+        return res.status(200).json([])
+    }
+}
