@@ -86,8 +86,9 @@ CREATE TABLE chats (
     sendername VARCHAR(200),
     username VARCHAR(200),
     msg VARCHAR(200),
-    chat_date DATE DEFAULT NOW()
+    chat_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
 
 DROP TABLE votedposts;
 DROP TABLE votedcomments;
