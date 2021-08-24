@@ -24,13 +24,14 @@ app.use(express.urlencoded({ extended: false }));
 
 const sessionMiddleware = session({
     name: 'profile_session',
-    secret: "4325435se54cret",
+    secret: "1244343ascsdf",
     resave: true,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
     store: new pgSession({
         pool : pool,               
         tableName : 'session',
+        ttl: 60 * 60 * 24,  // 1 day
+        pruneSessionInterval: 60
     })
 });
 
@@ -77,7 +78,7 @@ form validation for register, login, posts, comments, chat
 FRONTEND:
 add styling, css
 render replies, edits on frontend
-infinite scroll
+pagination
 
 USERPROFILE
 TABS - USER SETTINGS -  CHANGE EMAIL
