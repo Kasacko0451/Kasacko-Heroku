@@ -67,7 +67,7 @@ exports.get_replies = async function(req, res, next) {
                                             LEFT JOIN votedcomments AS l 
                                                 ON l.comment_id = m.id AND l.user_id=$2
                                         WHERE reply_id = $1 
-                                        ORDER BY m.comment_votes DESC`, 
+                                        ORDER BY m.votes DESC`, 
                                         [comment_id, user_id])
     if (res_replies.rows.length) {
         res_replies.rows.forEach(com => {
@@ -143,24 +143,24 @@ exports.vote_comment = async function(req, res, next) {
         if (res_comments.rows[0].liked === islike) {
             pool.query("DELETE FROM votedcomments WHERE user_id = $1 AND comment_id = $2", [user_id, comment_id])
             if (islike === true) {
-                pool.query("UPDATE comments SET comment_votes = comment_votes - 1 WHERE id = $1", [comment_id])
+                pool.query("UPDATE comments SET votes = votes - 1 WHERE id = $1", [comment_id])
             } else {
-                pool.query("UPDATE comments SET comment_votes = comment_votes + 1 WHERE id = $1", [comment_id])
+                pool.query("UPDATE comments SET votes = votes + 1 WHERE id = $1", [comment_id])
             }
         } else {
             pool.query("UPDATE votedcomments SET liked = $1 WHERE user_id = $2 AND comment_id = $3", [islike, user_id, comment_id])
             if (islike === true) {
-                pool.query("UPDATE comments SET comment_votes = comment_votes + 2 WHERE id = $1", [comment_id])
+                pool.query("UPDATE comments SET votes = votes + 2 WHERE id = $1", [comment_id])
             } else {
-                pool.query("UPDATE comments SET comment_votes = comment_votes - 2 WHERE id = $1", [comment_id])
+                pool.query("UPDATE comments SET votes = votes - 2 WHERE id = $1", [comment_id])
             }
         }
     } else {
         pool.query("INSERT INTO votedcomments (liked, user_id, comment_id) VALUES ($1, $2, $3)", [islike, user_id, comment_id])
         if (islike === true) {
-            pool.query("UPDATE comments SET comment_votes = comment_votes + 1 WHERE id = $1", [comment_id])
+            pool.query("UPDATE comments SET votes = votes + 1 WHERE id = $1", [comment_id])
         } else {
-            pool.query("UPDATE comments SET comment_votes = comment_votes - 1 WHERE id = $1", [comment_id])
+            pool.query("UPDATE comments SET votes = votes - 1 WHERE id = $1", [comment_id])
         }
     }
     return res.status(200).json()
