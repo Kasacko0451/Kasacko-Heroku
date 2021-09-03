@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs")
 const pool = require("../db.js");
 
 const loginStrategy = new LocalStrategy( async (username, password, done) => {
-    pool.connect()
+
     const res_user = await pool.query("SELECT * FROM users WHERE username=$1", [username])
 
     if (!res_user.rows[0]) return done("Username or password not valid", null);
