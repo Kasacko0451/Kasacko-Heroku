@@ -78,36 +78,32 @@ exports.vote_post = async function(req, res, next) {
     
     const post_id = req.body.post_id
     const user_id = req.user.id
-    const res_posts = await pool.query(`SELECT p.votes, v.* FROM posts AS p 
-                                        LEFT JOIN votedposts AS v 
-                                            ON p.id = v.post_id AND v.user_id = $1 
-                                        WHERE p.id = $2`, [user_id, post_id])
-    const votes = res_posts.rows[0].votes
+    const res_posts = await pool.query(`SELECT * FROM votedposts WHERE user_id=$1 AND post_id=$2`
+                                        , [user_id, post_id])
 
-    if (res_posts.rows[0].id !== null) {
+    if (res_posts.rows.length) {
         if (res_posts.rows[0].liked === islike) {
             pool.query("DELETE FROM votedposts WHERE user_id = $1 AND post_id = $2", [user_id, post_id])
             if (islike === true) {
-                pool.query("UPDATE posts SET votes = $1 WHERE id = $2", [votes - 1, post_id])
+                pool.query("UPDATE posts SET votes = votes - 1 WHERE id = $1", [post_id])
             } else {
-                pool.query("UPDATE posts SET votes = $1 WHERE id = $2", [votes + 1, post_id])
+                pool.query("UPDATE posts SET votes = votes + 1 WHERE id = $1", [post_id])
             }
         } else {
             pool.query("UPDATE votedposts SET liked = $1 WHERE user_id = $2 AND post_id = $3", [islike, user_id, post_id])
             if (islike === true) {
-                pool.query("UPDATE posts SET votes = $1 WHERE id = $2", [votes + 2, post_id])
+                pool.query("UPDATE posts SET votes = votes + 2 WHERE id = $1", [post_id])
             } else {
-                pool.query("UPDATE posts SET votes = $1 WHERE id = $2", [votes - 2, post_id])
+                pool.query("UPDATE posts SET votes = votes - 2 WHERE id = $1", [post_id])
             }
         }
     } else {
         pool.query("INSERT INTO votedposts (liked, user_id, post_id) VALUES ($1, $2, $3)", [islike, user_id, post_id])
         if (islike === true) {
-            pool.query("UPDATE posts SET votes = $1 WHERE id = $2", [votes + 1, post_id])
+            pool.query("UPDATE posts SET votes = votes + 1 WHERE id = $1", [post_id])
         } else {
-            pool.query("UPDATE posts SET votes = $1 WHERE id = $2", [votes - 1, post_id])
+            pool.query("UPDATE posts SET votes = votes - 1 WHERE id = $1", [post_id])
         }
     }
     return res.status(200).json()
-
 }

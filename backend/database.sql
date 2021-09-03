@@ -1,9 +1,9 @@
 CREATE DATABASE kasacko
 
 CREATE TABLE "session" (
-  "sid" varchar NOT NULL COLLATE "default",
-	"sess" json NOT NULL,
-	"expire" timestamp(6) NOT NULL
+    "sid" varchar NOT NULL COLLATE "default",
+    "sess" json NOT NULL,
+    "expire" timestamp(6) NOT NULL
 )
 WITH (OIDS=FALSE);
 
@@ -36,7 +36,7 @@ CREATE TABLE posts (
     user_id BIGINT NOT NULL REFERENCES users(id),
     post_title VARCHAR(80),
     post_content VARCHAR(500),
-    post_votes INT DEFAULT 0,
+    votes INT DEFAULT 0,
     post_created_at DATE DEFAULT NOW(),
     post_updated_at DATE DEFAULT NOW(),
     num_of_comments INT DEFAULT 0,
@@ -57,7 +57,7 @@ CREATE TABLE comments (
     reply_id BIGINT REFERENCES comments(id),
     reply_post_id INT,
     comment_content VARCHAR(500),
-    comment_votes INT DEFAULT 0,
+    votes INT DEFAULT 0,
     comment_created_at DATE DEFAULT NOW(),
     comment_updated_at DATE DEFAULT NOW(),
     num_of_replies INT DEFAULT 0,
@@ -89,10 +89,12 @@ CREATE TABLE chats (
     chat_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-
 DROP TABLE votedposts;
 DROP TABLE votedcomments;
 DROP TABLE comments;
 DROP TABLE posts;
 DROP TABLE followers;
+DROP TABLE followers_requests;
+DROP TABLE userprofiles;
+DROP TABLE chats;
 DROP TABLE users;
