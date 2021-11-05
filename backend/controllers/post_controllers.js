@@ -45,7 +45,9 @@ exports.post_info = async function(req, res, next) {
 exports.create_post = function (req, res, next) {
     const { post_title, post_content } = req.body
     const user_id = req.user.id
-    pool.query("INSERT INTO posts (post_title, post_content, user_id, deleted) VALUES ($1, $2, $3, $4)", [post_title, post_content, user_id, false])
+    console.log(req.body)
+    pool.query("INSERT INTO posts (post_title, post_content, user_id, deleted) VALUES ($1, $2, $3, $4)", [post_title, post_content, user_id, false], (result) => {
+    console.log(result)} )
     return res.status(200).json()
 }
 
