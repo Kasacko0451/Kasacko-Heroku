@@ -18,8 +18,6 @@ router.post("/edit_post", post_controllers.edit_post);
 
 router.post("/delete_post", post_controllers.delete_post);
 
-router.post("/get_liked_posts", post_controllers.get_liked_posts);
-
 router.put("/vote_post", post_controllers.vote_post);
 
 // COMMENT ROUTES
@@ -27,17 +25,11 @@ router.post("/get_users_comments", comment_controllers.get_users_comments);
 
 router.post("/get_comments", comment_controllers.get_comments);
 
-router.post("/get_replies", comment_controllers.get_replies);
-
 router.post("/create_comment", comment_controllers.create_comment);
 
 router.put("/edit_comment", comment_controllers.edit_comment);
 
-router.post("/create_reply", comment_controllers.create_reply);
-
 router.delete("/delete_comment", comment_controllers.delete_comment);
-
-router.post("/get_liked_comments", comment_controllers.get_liked_comments);
 
 router.put("/vote_comment", comment_controllers.vote_comment);
 
